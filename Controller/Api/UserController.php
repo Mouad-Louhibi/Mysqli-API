@@ -93,17 +93,12 @@ class UserController extends BaseController
     {
         $strErrorDesc = '';
         $requestMethod = $_SERVER["REQUEST_METHOD"];
-        // $arrQueryStringParams = $this->getQueryStringParams();
 
         if (strtoupper($requestMethod) == 'DELETE') {
             try {
                 $userModel = new UserModel();
 
                 $intId = $_GET['id'];
-
-                // if (isset($arrQueryStringParams['id']) && $arrQueryStringParams['id']) {
-                //     $intId = $arrQueryStringParams['id'];
-                // }
 
                 $arrUsers = $userModel->deleteUser($intId);
                 $responseData = json_encode($arrUsers);
@@ -145,6 +140,97 @@ class UserController extends BaseController
                     $username = $_GET['username'];
                     $user_email = $_GET['user_email'];
                     $user_status = $_GET['user_status'];
+                } else {
+                    echo "fillOut all required fields";
+                    exit();
+                }
+
+                $arrUsers = $userModel->updateUser($id, $username, $user_email, $user_status);
+                $responseData = json_encode($arrUsers);
+            } catch (Error $e) {
+                $strErrorDesc = $e->getMessage() . 'Something went wrong! Please contact support.';
+                $strErrorHeader = 'HTTP/1.1 500 Internal Server Error';
+            }
+        } else {
+            $strErrorDesc = 'Method not supported';
+            $strErrorHeader = 'HTTP/1.1 422 Unprocessable Entity';
+        }
+
+        // send output
+        if (!$strErrorDesc) {
+            $this->sendOutput(
+                $responseData,
+                array('Content-Type: application/json', 'HTTP/1.1 200 OK')
+            );
+        } else {
+            $this->sendOutput(
+                json_encode(array('error' => $strErrorDesc)),
+                array('Content-Type: application/json', $strErrorDesc)
+            );
+        }
+    }
+
+    public function setAction()
+    {
+        $strErrorDesc = '';
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        $json_string = file_get_contents('php://input');
+
+        if (strtoupper($requestMethod) == 'POST') {
+            try {
+                $userModel = new UserModel();
+
+                if ($json_string !== null) {
+                    $json_a = json_decode($json_string, true);;
+                    $username = $json_a['username'];
+                    $user_email = $json_a['user_email'];
+                    $user_status = $json_a['user_status'];
+                } else {
+                    echo "fillOut all required fields";
+                    exit();
+                }
+
+                $arrUsers = $userModel->setUser($username, $user_email, $user_status);
+                $responseData = json_encode($arrUsers);
+            } catch (Error $e) {
+                $strErrorDesc = $e->getMessage() . 'Something went wrong! Please contact support.';
+                $strErrorHeader = 'HTTP/1.1 500 Internal Server Error';
+            }
+        } else {
+            $strErrorDesc = 'Method not supported';
+            $strErrorHeader = 'HTTP/1.1 422 Unprocessable Entity';
+        }
+
+        // send output
+        if (!$strErrorDesc) {
+            $this->sendOutput(
+                $responseData,
+                array('Content-Type: application/json', 'HTTP/1.1 200 OK')
+            );
+        } else {
+            $this->sendOutput(
+                json_encode(array('error' => $strErrorDesc)),
+                array('Content-Type: application/json', $strErrorDesc)
+            );
+        }
+    }
+
+    public function editAction()
+    {
+        $strErrorDesc = '';
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        $json_string = file_get_contents('php://input');
+
+        if (strtoupper($requestMethod) == 'PUT') {
+            try {
+                $userModel = new UserModel();
+
+                if ($json_string !== null) {
+                    $json_a = json_decode($json_string, true);
+                    $id = $json_a['id'];
+                    $username = $json_a['username'];
+                    $user_email = $json_a['user_email'];
+                    $user_status = $json_a['user_status'];
                 } else {
                     echo "fillOut all required fields";
                     exit();
